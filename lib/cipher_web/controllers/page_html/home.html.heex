@@ -1,1 +1,64 @@
-hello world
+<textarea id="secret" placeholder="Put the sensitive information you need to share here..."></textarea>
+<select id="expiry">
+  <option value="1">1 hour</option>
+  <option value="3">3 hours</option>
+  <option value="12">12 hours</option>
+  <option value="48">2 days</option>
+  <option value="168">1 week</option>
+  <option value="720">1 month</option>
+</select>
+<button id="generate">Generate link</button>
+<div id="result"></div>
+
+<script>
+document.getElementById('generate').onclick = async () => {
+  const secret = document.getElementById('secret').value;
+  const hours = parseInt(document.getElementById('expiry').value);
+  
+  if (!secret.trim()) {
+    document.getElementById('result').innerHTML = 'Please enter a secret message';
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/keys', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ expiry: hours, uses: 1 })
+    });
+
+    const data = await response.json();
+      
+    // Encrypt secret
+    const key = await crypto.subtle.importKey(
+      'raw',
+      Uint8Array.from(atob(data.key), c => c.charCodeAt(0)),
+      'AES-GCM',
+      false,
+      ['encrypt']
+    );
+    
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encoded = new TextEncoder().encode(secret);
+    const encrypted = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv: iv },
+      key,
+      encoded
+    );
+    
+    const combined = new Uint8Array(iv.length + encrypted.byteLength);
+    combined.set(iv);
+    combined.set(new Uint8Array(encrypted), iv.length);
+    
+    const encryptedB64 = btoa(String.fromCharCode(...combined))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
+    
+    const url = `${location.origin}/receive?kid=${data.id}&sec=${encryptedB64}`;
+    document.getElementById('result').innerHTML = `<a href="${url}">${url}</a>`;
+  } catch (error) {
+    document.getElementById('result').innerHTML = 'Error!';
+  }
+};
+</script>

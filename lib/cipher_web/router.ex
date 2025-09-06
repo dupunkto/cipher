@@ -18,9 +18,12 @@ defmodule CipherWeb.Router do
   scope "/", CipherWeb do
     pipe_through :browser
     get "/", PageController, :home
+    get "/receive", PageController, :receive
   end
 
   scope "/api", CipherWeb do
     pipe_through :api
+    post "/keys", ApiController, :create_key
+    get "/keys/:id", ApiController, :fetch_key
   end
 end

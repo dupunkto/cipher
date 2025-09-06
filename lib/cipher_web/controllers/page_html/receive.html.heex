@@ -1,0 +1,51 @@
+<div id="message">Decrypting...</div>
+
+<script>
+(async () => {
+  const params = new URLSearchParams(location.search);
+  const kid = params.get('kid');
+  const sec = params.get('sec');
+  
+  if (!kid || !sec) {
+    document.getElementById('message').innerHTML = 'Invalid or missing parameters';
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/keys/${kid}`);
+    if (!response.ok) {
+      document.getElementById('message').innerHTML = 'Your URL is wrong or has expired.';
+      return;
+    }
+    
+    const data = await response.json();
+    
+    const encryptedBytes = Uint8Array.from(
+      atob(sec.replace(/-/g, '+').replace(/_/g, '/').padEnd(sec.length + (4 - sec.length % 4) % 4, '=')), 
+      c => c.charCodeAt(0)
+    );
+    
+    const iv = encryptedBytes.slice(0, 12);
+    const encrypted = encryptedBytes.slice(12);
+    
+    const key = await crypto.subtle.importKey(
+      'raw',
+      Uint8Array.from(atob(data.key), c => c.charCodeAt(0)),
+      'AES-GCM',
+      false,
+      ['decrypt']
+    );
+    
+    const decrypted = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: iv },
+      key,
+      encrypted
+    );
+    
+    const secret = new TextDecoder().decode(decrypted);
+    document.getElementById('message').innerHTML = `<pre>${secret}</pre>`;
+  } catch (error) {
+    document.getElementById('message').innerHTML = 'Failed to decrypt secret';
+  }
+})();
+</script>
