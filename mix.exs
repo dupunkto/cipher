@@ -25,7 +25,7 @@ defmodule Cipher.MixProject do
   end
 
   def description do
-    "Securely exchange sensitive information."
+    "Securely send passphrases and API keys."
   end
 
   defp package do

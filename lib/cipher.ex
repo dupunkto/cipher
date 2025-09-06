@@ -1,6 +1,6 @@
 defmodule Cipher do
   @moduledoc """
-  Securely exchange sensitive information.
+  Securely send passphrases and API keys.
   """
 
   alias Cipher.Repo
