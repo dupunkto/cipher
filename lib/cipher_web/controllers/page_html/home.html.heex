@@ -1,22 +1,35 @@
-<textarea id="secret" placeholder="Put the sensitive information you need to share here..."></textarea>
-<select id="expiry">
-  <option value="1">1 hour</option>
-  <option value="3">3 hours</option>
-  <option value="12">12 hours</option>
-  <option value="48">2 days</option>
-  <option value="168">1 week</option>
-  <option value="720">1 month</option>
-</select>
-<button id="generate">Generate link</button>
+<h1>Cipher</h1>
+
+<form>
+  <textarea required placeholder="Put the sensitive information you need to share here..."></textarea>
+  <select>
+    <option value="1">1 hour</option>
+    <option value="3">3 hours</option>
+    <option value="12">12 hours</option>
+    <option value="48">2 days</option>
+    <option value="168">1 week</option>
+    <option value="720">1 month</option>
+  </select>
+
+  <button type="submit">Generate link</button>
+</form>
+
 <div id="result"></div>
 
 <script>
-document.getElementById('generate').onclick = async () => {
-  const secret = document.getElementById('secret').value;
-  const hours = parseInt(document.getElementById('expiry').value);
+const form = document.querySelector("form");
+const textarea = document.querySelector("textarea");
+const select = document.querySelector("select");
+const result = document.getElementById("result");
+
+form.onsubmit = async (e) => {
+  e.preventDefault();
+
+  const secret = textarea.value;
+  const hours = parseInt(select.value);
   
   if (!secret.trim()) {
-    document.getElementById('result').innerHTML = 'Please enter a secret message';
+    result.innerHTML = 'Please enter a secret message';
     return;
   }
 
@@ -29,7 +42,6 @@ document.getElementById('generate').onclick = async () => {
 
     const data = await response.json();
       
-    // Encrypt secret
     const key = await crypto.subtle.importKey(
       'raw',
       Uint8Array.from(atob(data.key), c => c.charCodeAt(0)),
@@ -50,15 +62,16 @@ document.getElementById('generate').onclick = async () => {
     combined.set(iv);
     combined.set(new Uint8Array(encrypted), iv.length);
     
-    const encryptedB64 = btoa(String.fromCharCode(...combined))
+    const base64 = btoa(String.fromCharCode(...combined))
       .replace(/\+/g, '-')
       .replace(/\//g, '_')
       .replace(/=/g, '');
     
-    const url = `${location.origin}/receive?kid=${data.id}&sec=${encryptedB64}`;
-    document.getElementById('result').innerHTML = `<a href="${url}">${url}</a>`;
+    const url = `${location.origin}/receive?kid=${data.id}&sec=${base64}`;
+    form.style.display = "none";
+    result.innerHTML = `<input type="url" value="${url}" readonly>`;
   } catch (error) {
-    document.getElementById('result').innerHTML = 'Error!';
+    result.innerHTML = "Error!";
   }
 };
 </script>
