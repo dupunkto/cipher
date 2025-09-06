@@ -1,9 +1,5 @@
 defmodule CipherWeb.ErrorHTML do
-  @moduledoc """
-  This module is invoked by your endpoint in case of errors on HTML requests.
-
-  See config/config.exs.
-  """
+  @moduledoc false
   use CipherWeb, :html
 
   # If you want to customize your error pages,

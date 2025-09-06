@@ -1,8 +1,5 @@
 defmodule Cipher.Application do
-  # See https://hexdocs.pm/elixir/Application.html
-  # for more information on OTP Applications
   @moduledoc false
-
   use Application
 
   @impl true
@@ -10,11 +7,7 @@ defmodule Cipher.Application do
     children = [
       CipherWeb.Telemetry,
       Cipher.Repo,
-      {DNSCluster, query: Application.get_env(:cipher, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Cipher.PubSub},
-      # Start a worker by calling: Cipher.Worker.start_link(arg)
-      # {Cipher.Worker, arg},
-      # Start to serve requests, typically the last entry
       CipherWeb.Endpoint
     ]
 

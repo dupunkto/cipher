@@ -1,4 +1,5 @@
 defmodule CipherWeb.Endpoint do
+  @moduledoc false
   use Phoenix.Endpoint, otp_app: :cipher
 
   # The session will be stored in the cookie and signed,
@@ -10,10 +11,6 @@ defmodule CipherWeb.Endpoint do
     signing_salt: "mz+IUVJi",
     same_site: "Lax"
   ]
-
-  # socket "/live", Phoenix.LiveView.Socket,
-  #   websocket: [connect_info: [session: @session_options]],
-  #   longpoll: [connect_info: [session: @session_options]]
 
   # Serve at "/" the static files from "priv/static" directory.
   #

@@ -1,4 +1,5 @@
 defmodule CipherWeb.Router do
+  @moduledoc false
   use CipherWeb, :router
 
   pipeline :browser do
@@ -16,12 +17,10 @@ defmodule CipherWeb.Router do
 
   scope "/", CipherWeb do
     pipe_through :browser
-
     get "/", PageController, :home
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", CipherWeb do
-  #   pipe_through :api
-  # end
+  scope "/api", CipherWeb do
+    pipe_through :api
+  end
 end

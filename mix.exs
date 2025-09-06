@@ -1,21 +1,40 @@
 defmodule Cipher.MixProject do
   use Mix.Project
 
+  @documentation "https://docs.dupunkto.org/cipher"
+  @git_repository "https://git.dupunkto.org/~dupunkto/cipher"
+
   def project do
     [
+      name: "Cipher",
       app: :cipher,
-      version: "0.1.0",
-      elixir: "~> 1.14",
+      version: "0.0.1",
+      elixir: "~> 1.18",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+
+      # Docs
+      source_url: @git_repository,
+      homepage_url: @documentation,
+      description: description(),
+      package: package(),
+      docs: docs()
     ]
   end
 
-  # Configuration for the OTP application.
-  #
-  # Type `mix help compile.app` for more information.
+  def description do
+    "Securely exchange sensitive information."
+  end
+
+  defp package do
+    [
+      licenses: ["Unlicense"],
+      links: %{"Sources" => @git_repository}
+    ]
+  end
+
   def application do
     [
       mod: {Cipher.Application, []},
@@ -27,9 +46,6 @@ defmodule Cipher.MixProject do
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
-  # Specifies your project dependencies.
-  #
-  # Type `mix help deps` for examples and options.
   defp deps do
     [
       {:phoenix, "~> 1.7.21"},
@@ -42,25 +58,29 @@ defmodule Cipher.MixProject do
       {:floki, ">= 0.30.0", only: :test},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
-      {:gettext, "~> 0.26"},
       {:jason, "~> 1.2"},
-      {:dns_cluster, "~> 0.1.1"},
-      {:bandit, "~> 1.5"}
+      {:bandit, "~> 1.5"},
+
+      # For documentation :)
+      {:ex_doc, "~> 0.34", only: :dev, runtime: false},
     ]
   end
 
-  # Aliases are shortcuts or tasks specific to the current project.
-  # For example, to install project dependencies and perform other setup tasks, run:
-  #
-  #     $ mix setup
-  #
-  # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
       setup: ["deps.get", "ecto.setup"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
+    ]
+  end
+
+  defp docs do
+    [
+      main: "Cipher",
+      api_reference: false,
+      authors: ["Robijntje"],
+      formatters: ["html"]
     ]
   end
 end
