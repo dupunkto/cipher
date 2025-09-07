@@ -62,7 +62,6 @@ defmodule CipherWeb do
   defp html_helpers do
     quote do
       import Phoenix.HTML
-      import CipherWeb.CoreComponents
 
       alias Phoenix.LiveView.JS
 
