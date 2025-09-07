@@ -3,3 +3,7 @@
 serve() {
   mix phx.server
 }
+
+deploy() {
+	lift deploy
+}

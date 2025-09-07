@@ -1,0 +1,4 @@
+name: cipher
+image: dupunkto/cipher
+registry: ghcr.io
+host: nov
