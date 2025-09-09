@@ -39,7 +39,7 @@ defmodule Cipher do
   """
   @spec peek_key(String.t()) :: {:ok, Key.t()} | {:error, term()}
   def peek_key(id) do
-    query = key_query(id, DateTime.utc_now())
+    query = active_key_query(id, DateTime.utc_now())
 
     case Repo.one(query) do
       nil -> {:error, :not_found}
@@ -53,7 +53,7 @@ defmodule Cipher do
   """
   @spec fetch_key(String.t()) :: {:ok, Key.t()} | {:error, term()}
   def fetch_key(id) do
-    query = key_query(id, DateTime.utc_now())
+    query = active_key_query(id, DateTime.utc_now())
 
     case Repo.one(query) do
       nil -> {:error, :not_found}
@@ -62,7 +62,7 @@ defmodule Cipher do
     end
   end
 
-  defp key_query(id, now) do
+  defp active_key_query(id, now) do
     Key
     |> where([k], k.id == ^id)
     |> where([k], k.expiry > ^now)
@@ -85,6 +85,22 @@ defmodule Cipher do
       nil -> {:error, :not_found}
       inbox -> {:ok, inbox}
     end
+  end
+
+  @doc """
+  Prunes expired and stale keys from the database.
+  """
+  @spec cleanup() :: :ok
+  def cleanup do    
+    DateTime.utc_now()
+    |> expired_stale_key_query()
+    |> Repo.delete_all()
+    
+    :ok
+  end
+
+  defp expired_stale_key_query(now) do
+    from(k in Key, where: k.expiry < ^now or k.uses_left == 0)
   end
 
   @doc """

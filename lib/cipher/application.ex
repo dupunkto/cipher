@@ -8,6 +8,7 @@ defmodule Cipher.Application do
       CipherWeb.Telemetry,
       Cipher.Repo,
       {Phoenix.PubSub, name: Cipher.PubSub},
+      Cipher.Cleanup,
       CipherWeb.Endpoint
     ]
 
