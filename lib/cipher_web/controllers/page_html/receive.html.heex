@@ -12,7 +12,6 @@
     return;
   }
 
-  // First check metadata
   try {
     const response = await fetch(`/api/keys/${kid}/meta`);
     if (!response.ok) {

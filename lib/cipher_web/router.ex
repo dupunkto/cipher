@@ -19,12 +19,14 @@ defmodule CipherWeb.Router do
     pipe_through :browser
     get "/", PageController, :home
     get "/receive", PageController, :receive
+    get "/send/:slug", PageController, :send
   end
 
-  scope "/api", CipherWeb do
+  scope "/", CipherWeb do
     pipe_through :api
-    post "/keys", APIController, :create_key
-    get "/keys/:id", APIController, :fetch_key
-    get "/keys/:id/meta", APIController, :meta_key
+    post "/api/keys", APIController, :create_key
+    get "/api/keys/:id", APIController, :fetch_key
+    get "/api/keys/:id/meta", APIController, :meta_key
+    post "/send/:slug", DeliverController, :send_email
   end
 end

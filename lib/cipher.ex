@@ -5,8 +5,11 @@ defmodule Cipher do
 
   alias Cipher.Repo
   alias Cipher.Key
+  alias Cipher.Inbox
 
   import Ecto.Query
+
+  require Logger
 
   @doc """
   Creates a new encryption key.
@@ -70,6 +73,57 @@ defmodule Cipher do
     case Repo.update_all(query, inc: [uses_left: -1]) do
       {1, _} -> {:ok, key}
       {0, _} -> {:error, :invalid_usage}
+    end
+  end
+
+  @doc """
+  Fetches an inbox by slug.
+  """
+  @spec fetch_inbox(String.t()) :: {:ok, Inbox.t()} | {:error, :not_found}
+  def fetch_inbox(slug) do
+    case Repo.get_by(Inbox, slug: slug) do
+      nil -> {:error, :not_found}
+      inbox -> {:ok, inbox}
+    end
+  end
+
+  @doc """
+  Sends a Cipher URL to the specified inbox via SMTP.
+  """
+  @spec send!(Inbox.t(), String.t(), String.t()) :: term()
+  def send!(inbox, subject, url) do
+    config = Application.get_env(:cipher, :smtp)
+    base_opts = Keyword.delete(config, :sender)
+
+    # This would be safe: (but is broken)
+    # tls_opts = [
+    #   verify: :verify_peer,
+    #   cacerts: :public_key.cacerts_get(),
+    #   versions: [:"tlsv1.2", :"tlsv1.3"]
+    # ]
+
+    # However, this is easy:
+    tls_opts = [verify: :verify_none]
+
+    relay_opts = Keyword.merge(base_opts, [
+      sockopts: tls_opts,
+      tls_options: tls_opts
+    ])
+
+    message = """
+    From: #{config[:sender]}\r
+    To: #{inbox.email}\r
+    Subject: #{subject}\r
+    \r
+    You have received a new encrypted message: #{url}
+    """
+        
+    email = {config[:sender], [inbox.email], message}
+
+    case :gen_smtp_client.send_blocking(email, relay_opts) do
+      {:error, reason} -> raise "Failed to send email, got: #{inspect(reason)}"
+      {:error, _, reason} -> raise "Failed to send email, got: #{inspect(reason)}"
+      result -> Logger.info("Sent email (from:#{config[:sender]}, to:#{inbox.email}), with: #{inspect(result)}")
     end
   end
 end

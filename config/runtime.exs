@@ -20,6 +20,14 @@ if System.get_env("PHX_SERVER") do
   config :cipher, CipherWeb.Endpoint, server: true
 end
 
+config :cipher, :smtp,
+  relay: System.fetch_env!("SMTP_HOST"),
+  port: String.to_integer(System.get_env("SMTP_PORT") || "587"),
+  username: System.fetch_env!("SMTP_USERNAME"),
+  password: System.fetch_env!("SMTP_PASSWORD"),
+  sender: System.fetch_env!("SMTP_SENDER"),
+  ssl: System.get_env("SMTP_SSL") == "true"
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||
