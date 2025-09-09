@@ -32,6 +32,19 @@ defmodule Cipher do
   end
 
   @doc """
+  Fetches an existing (usable and non-expired) encryption key without consuming it.
+  """
+  @spec peek_key(String.t()) :: {:ok, Key.t()} | {:error, term()}
+  def peek_key(id) do
+    query = key_query(id, DateTime.utc_now())
+
+    case Repo.one(query) do
+      nil -> {:error, :not_found}
+      key -> {:ok, key}
+    end
+  end
+
+  @doc """
   Fetches an existing (usable and non-expired) encryption key and
   substracts a use from it.
   """

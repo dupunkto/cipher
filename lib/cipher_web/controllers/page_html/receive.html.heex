@@ -1,51 +1,91 @@
-<div id="message">Decrypting...</div>
+<div id="message">Loading...</div>
 
 <script>
 (async () => {
+  const message = document.getElementById('message');
   const params = new URLSearchParams(location.search);
   const kid = params.get('kid');
   const sec = params.get('sec');
   
   if (!kid || !sec) {
-    document.getElementById('message').innerHTML = 'Invalid or missing parameters';
+    document.getElementById('message').innerHTML = 'Your URL is wrong or has expired.';
     return;
   }
 
+  // First check metadata
   try {
-    const response = await fetch(`/api/keys/${kid}`);
+    const response = await fetch(`/api/keys/${kid}/meta`);
     if (!response.ok) {
       document.getElementById('message').innerHTML = 'Your URL is wrong or has expired.';
       return;
     }
     
-    const data = await response.json();
+    const meta = await response.json();
+    const usesLeft = meta.uses_left;
     
-    const encryptedBytes = Uint8Array.from(
-      atob(sec.replace(/-/g, '+').replace(/_/g, '/').padEnd(sec.length + (4 - sec.length % 4) % 4, '=')), 
-      c => c.charCodeAt(0)
-    );
+    // If unlimited uses (-1), show secret directly
+    if (usesLeft == -1) {
+      await unlockSecret();
+      return;
+    }
     
-    const iv = encryptedBytes.slice(0, 12);
-    const encrypted = encryptedBytes.slice(12);
-    
-    const key = await crypto.subtle.importKey(
-      'raw',
-      Uint8Array.from(atob(data.key), c => c.charCodeAt(0)),
-      'AES-GCM',
-      false,
-      ['decrypt']
-    );
-    
-    const decrypted = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: iv },
-      key,
-      encrypted
-    );
-    
-    const secret = new TextDecoder().decode(decrypted);
-    document.getElementById('message').innerHTML = `<pre>${secret}</pre>`;
+    // Show confirmation based on uses left
+    if (usesLeft == 1) {
+      message.innerHTML = `
+        <p>Are you sure? This URL can only be used once. If you unlock the secret now, it cannot be opened ever again. Make sure you store it somewhere safe after opening.</p>
+        <button onclick="unlockSecret()">Unlock secret</button>
+      `;
+    } else {
+      message.innerHTML = `
+        <p>Are you sure? This URL has a limited number of uses. When you run out of uses, the secret cannot be opened ever again. You have ${usesLeft} uses left. Make sure you store it somewhere safe after opening.</p>
+        <button onclick="unlockSecret()">Unlock secret</button>
+      `;
+    }
   } catch (error) {
-    document.getElementById('message').innerHTML = 'Failed to decrypt secret';
+    message.innerHTML = 'Your URL is wrong or has expired.';
   }
+
+  async function unlockSecret() {
+    message.innerHTML = 'Decrypting...';
+    
+    try {
+      const response = await fetch(`/api/keys/${kid}`);
+      if (!response.ok) {
+        message.innerHTML = 'Your URL is wrong or has expired.';
+        return;
+      }
+      
+      const data = await response.json();
+      
+      const encryptedBytes = Uint8Array.from(
+        atob(sec.replace(/-/g, '+').replace(/_/g, '/').padEnd(sec.length + (4 - sec.length % 4) % 4, '=')), 
+        c => c.charCodeAt(0)
+      );
+      
+      const iv = encryptedBytes.slice(0, 12);
+      const encrypted = encryptedBytes.slice(12);
+      
+      const key = await crypto.subtle.importKey(
+        'raw',
+        Uint8Array.from(atob(data.key), c => c.charCodeAt(0)),
+        'AES-GCM',
+        false,
+        ['decrypt']
+      );
+      
+      const decrypted = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: iv },
+        key,
+        encrypted
+      );
+      
+      const secret = new TextDecoder().decode(decrypted);
+      message.innerHTML = `<pre>${secret}</pre>`;
+    } catch (error) {
+      message.innerHTML = 'Could not decrypt.';
+    }
+  }
+
+  window.unlockSecret = unlockSecret;
 })();
 </script>

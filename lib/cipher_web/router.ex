@@ -23,7 +23,8 @@ defmodule CipherWeb.Router do
 
   scope "/api", CipherWeb do
     pipe_through :api
-    post "/keys", ApiController, :create_key
-    get "/keys/:id", ApiController, :fetch_key
+    post "/keys", APIController, :create_key
+    get "/keys/:id", APIController, :fetch_key
+    get "/keys/:id/meta", APIController, :meta_key
   end
 end

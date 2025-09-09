@@ -1,4 +1,4 @@
-defmodule CipherWeb.ApiController do
+defmodule CipherWeb.APIController do
   @moduledoc false
   use CipherWeb, :controller
 
@@ -16,6 +16,18 @@ defmodule CipherWeb.ApiController do
         conn
         |> put_status(:internal_server_error)
         |> json(%{error: "Internal server error."})
+    end
+  end
+
+  def meta_key(conn, %{"id" => key_id}) do
+    case Cipher.peek_key(key_id) do
+      {:ok, %Cipher.Key{} = key} ->
+        json(conn, Map.take(key, [:uses_left, :expiry]))
+
+      {:error, :not_found} ->
+        conn
+        |> put_status(:not_found)
+        |> json(%{error: "Not found."})
     end
   end
 
