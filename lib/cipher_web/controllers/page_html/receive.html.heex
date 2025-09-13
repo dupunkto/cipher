@@ -79,7 +79,11 @@
       );
       
       const secret = new TextDecoder().decode(decrypted);
-      message.innerHTML = `<pre>${secret}</pre>`;
+      const pre = document.createElement('pre');
+      pre.textContent = secret; // Needed for escaping the secret
+      message.innerHTML = '';
+      message.appendChild(pre);
+
     } catch (error) {
       message.innerHTML = 'Could not decrypt.';
     }
