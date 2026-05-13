@@ -1,8 +1,5 @@
 defmodule Cipher.Release do
-  @moduledoc """
-  Used for executing DB release tasks when run in production without Mix
-  installed.
-  """
+  @moduledoc false
   @app :cipher
 
   def migrate do

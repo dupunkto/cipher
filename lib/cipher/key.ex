@@ -2,10 +2,10 @@ defmodule Cipher.Key do
   @moduledoc """
   A tagged {en,de}cryption key.
   """
-  use Ecto.Schema
+  use TypedEctoSchema
 
   @primary_key {:id, :string, []}
-  schema "encryption_keys" do
+  typed_schema "encryption_keys" do
     field :key, :binary
     field :expiry, :utc_datetime
     field :uses_left, :integer

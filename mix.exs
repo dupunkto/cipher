@@ -61,6 +61,7 @@ defmodule Cipher.MixProject do
       {:jason, "~> 1.2"},
       {:bandit, "~> 1.5"},
       {:gen_smtp, "~> 1.2"},
+      {:typed_ecto_schema, "~> 0.4.3", runtime: false},
 
       # For documentation :)
       {:ex_doc, "~> 0.34", only: :dev, runtime: false},
