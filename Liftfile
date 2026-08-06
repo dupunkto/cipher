@@ -3,7 +3,6 @@ services:
 - name: cipher
   type: container
   image: dupunkto/cipher
-  registry: ghcr.io
 - name: docs
   type: static
   src: doc
