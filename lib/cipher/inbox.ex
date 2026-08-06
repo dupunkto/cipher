@@ -8,6 +8,8 @@ defmodule Cipher.Inbox do
   typed_schema "inboxes" do
     field :slug, :string
     field :email, :string
+    field :html_head, :string
+    field :html_body, :string
 
     timestamps()
   end
