@@ -196,7 +196,7 @@ parse_payload() {
 
 do_parse_payload() {
   node -e '
-    const value = require("fs").readFileSync(0, "utf8");
+    const value = require("fs").readFileSync(0, "utf8").replace(/\r?\n$/, "");
     try {
       let kid, sec;
       if (/^https?:\/\//.test(value)) {
