@@ -19,8 +19,8 @@ usage() {
   echo "Usage: cipher <command> [options]"
   echo
   echo "HIGH LEVEL COMMANDS"
-  echo "  encrypt [options] <input>     Provision key and encrypt secret."
-  echo "  decrypt <input>               Decrypt secret with embedded key."
+  echo "  encrypt [options] [input]     Provision key and encrypt secret."
+  echo "  decrypt [input]               Decrypt secret with embedded key."
   echo
   echo "LOW LEVEL COMMANDS"
   echo "  keygen [options]              Generate key."
@@ -32,7 +32,7 @@ usage() {
   echo "  --expiry, -e <int>            The expiry interval for a key in hours."
   echo "  --format, -f <url|blob>       Return secret as blob or URL."
   echo
-  echo "Use - to read input from stdin."
+  echo "Omit positional input, or use - to read from stdin."
   echo
   exit 0
 }
@@ -256,8 +256,9 @@ encrypt() {
   arg --define format --short f --default blob
   arg --parse "$@"
 
-  [ "$argc" -gt 0 ] || err 'encrypt: missing argument'
-  [ "$argc" -eq 1 ] || err "encrypt: unexpected argument '$argv_1'"
+  [ "$argc" -le 1 ] || err "encrypt: unexpected argument '$argv_1'"
+
+  input=${argv_0--}
 
   validate_endpoint
   validate_policy
@@ -274,10 +275,10 @@ encrypt() {
 
   ciphertext=$({
     printf '%s\n' "$key"
-    if [ "$argv_0" = - ]; then
+    if [ "$input" = - ]; then
       cat
     else
-      printf '%s' "$argv_0"
+      printf '%s' "$input"
     fi
   } | crypto encrypt) || err 'could not encrypt'
 
@@ -291,15 +292,15 @@ encrypt() {
 decrypt() {
   arg --parse "$@"
 
-  [ "$argc" -gt 0 ] || err 'decrypt: missing argument'
-  [ "$argc" -eq 1 ] || err "decrypt: unexpected argument '$argv_1'"
+  [ "$argc" -le 1 ] || err "decrypt: unexpected argument '$argv_1'"
+  input=${argv_0--}
 
   validate_endpoint
 
-  if [ "$argv_0" = - ]; then
+  if [ "$input" = - ]; then
     parse_payload
   else
-    parse_payload "$argv_0"
+    parse_payload "$input"
   fi
 
   key=$(fetch_key "$kid")
